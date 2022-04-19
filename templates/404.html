@@ -1,0 +1,17 @@
+{% extends "base_prod.html" %}
+
+{% block title %}
+    <title>404 page not found</title>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="jumbotron">
+            <h1 class="display-4">404</h1>
+            <!--h3 class="display-4">{{ exception }}</h3-->
+            <p class="lead">Страница на которую Вы пытаетесь перейти не существует.</p>
+            <hr class="my-4">
+            <p><a href="/">Вернуться на главную страницу приложения</a></p>
+        </div>
+    </div>
+{% endblock %}

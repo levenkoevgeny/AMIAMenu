@@ -1,0 +1,225 @@
+{% extends 'base_prod.html' %}
+
+{% load menu_tags %}
+{% load dict_tags %}
+{% load math_tags %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block own_css %}{% endblock %}
+{% block title %}
+    <title>Раскладка меню</title>
+{% endblock %}
+
+{% block content %}
+    {% for menu_day in menu_days %}
+        <div class="modal fade" id="menu_day_modal_{{ menu_day.id }}" tabindex="-1" aria-labelledby="exampleModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <form class="menu_day_update_class" id="{{ menu_day.id }}">{% csrf_token %}
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">{{ menu_day }} - редактирование</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+
+                            <select id="meals_select_hidden_{{ menu_day.id }}" multiple hidden>
+                                {% for meal_time in meal_times %}
+                                    <option value="{{ meal_time.id }}" selected></option>
+                                {% endfor %}
+                            </select>
+                            {% for meal_time in meal_times %}
+                                {{ meal_time }}<br>
+                                <select id="meal_select_{{ menu_day.id }}_{{ meal_time.id }}"
+                                        class="js-example-basic-single form-select" multiple style="width: 100%;">
+                                    <option value="">-----</option>
+                                    {% with menu_day.mapsinmenuday_set.all|get_meal_items:meal_time as meals %}
+                                        {% if meals %}
+                                            {% for map in maps %}
+                                                {% if map in meals.all %}
+                                                    <option value="{{ map.id }}" selected>{{ map }}</option>
+                                                {% else %}
+                                                    <option value="{{ map.id }}">{{ map }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            {% for map in maps %}
+                                                <option value="{{ map.id }}">{{ map }}</option>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endwith %}
+
+                                </select><br>
+                            {% endfor %}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                            {#                            <button type="button" class="btn btn-danger">Удалить</button>#}
+                            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="container-fluid">
+        <br>
+        <h1>РАСКЛАДКА ПРОДУКТОВ с <span class="text-decoration-underline">{{ date_start|date:"d.m.y" }}</span> по <span
+                class="text-decoration-underline">{{ date_end|date:"d.m.y" }}</span></h1>
+        <br>
+        <form action="{% url 'menu:menu_items' %}" method="GET" id="id_filter_form">
+            <input type="hidden" id="current_date" value="{{ today|date:"Y-m-d" }}">
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Дата (с)</span>
+                        {% render_field filter.form.menu_day_date_start class+="form-control" style="width: 200px;" %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Дата (по)</span>
+                        {% render_field filter.form.menu_day_date_end class+="form-control" style="width: 200px;" %}
+                    </div>
+                </div>
+
+                <div class="col-md-4"></div>
+            </div>
+        </form>
+        <br><br>
+
+        {% if menu_days %}
+            {% with products_group_main.count|add:"1" as td_count %}
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th scope="col">Наименование блюда</th>
+                        {% for product_g in products_group_main %}
+                            <th scope="col" class="table-success">{{ product_g.group_name }}</th>
+                            {% with maps_id_list|get_all_products_in_group_dates_interval:product_g.id as products_in_group %}
+                                {% for product in products_in_group %}
+                                    <td>{{ product }}</td>
+                                {% endfor %}
+                            {% endwith %}
+                        {% endfor %}
+                        <th>Выход продукта</th>
+                        {% for dish_category in dish_categories %}
+                            <td>{{ dish_category }}</td>
+                        {% endfor %}
+                        <th>Энергетическая ценность</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for menu_day in menu_days %}
+                        <tr>
+                            <td colspan="{{ td_count }}" class="text-center">
+                                <h4>
+                                    <a href="#menu_day_modal_{{ menu_day.id }}" data-bs-toggle="modal"
+                                       class="link-secondary">
+                                        <nobr>{{ menu_day.menu_day_date|date:"d.m.y" }}</nobr>
+                                    </a>
+                                </h4>
+                            </td>
+                        </tr>
+                        {% for meal_time in meal_times %}
+                            <tr>
+                                <td colspan="{{ td_count }}" class="text-center align-middle"><h5>{{ meal_time }}</h5>
+                                </td>
+                            </tr>
+                            {% for map in menu_day.mapsinmenuday_set.all|get_meal_items:meal_time %}
+                                <tr>
+                                    <td>{{ map.map_name }}</td>
+                                    {% for product_g in products_group_main %}
+                                        <td class="table-success text-center align-middle">{{ map|get_map_gross_by_product_group:product_g.id }}</td>
+                                        {% with maps_id_list|get_all_products_in_group_dates_interval:product_g.id as products_in_group %}
+                                            {% for product in products_in_group %}
+                                                <td class="text-center align-middle">{{ map|get_product_count_in_map:product }}</td>
+                                            {% endfor %}
+                                        {% endwith %}
+                                    {% endfor %}
+                                    {% with map|get_net_weights:menu_day.menu_day_date as net_weights %}
+                                        <td class="text-center align-middle">{{ net_weights|get_sub_dict:'full_net_weight' }}</td>
+                                        {% for dish_category in dish_categories %}
+                                            <td class="text-center align-middle">{{ net_weights|get_sub_dict:dish_category.id }}</td>
+                                        {% endfor %}
+                                    {% endwith %}
+                                    {% with map|get_values:menu_day.menu_day_date as values %}
+                                        <td class="text-center align-middle">{{ values|get_sub_dict:"energy" }}</td>
+                                    {% endwith %}
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        <tr>
+                            <td><b>Итого за день</b></td>
+
+                            {% for product_g in products_group_main %}
+                                <td class="table-success text-center align-middle">{{ menu_day|get_map_gross_by_product_group_day:product_g.id }}</td>
+                                {% with maps_id_list|get_all_products_in_group_dates_interval:product_g.id as products_in_group %}
+                                    {% for product in products_in_group %}
+                                        <td class="text-center align-middle">{{ menu_day|get_product_count_in_map_day:product }}</td>
+                                    {% endfor %}
+                                {% endwith %}
+                            {% endfor %}
+                            <td class="text-center align-middle"></td>
+                            <td class="text-center align-middle"></td>
+                            <td class="text-center align-middle"></td>
+                            <td class="text-center align-middle"></td>
+                            <td class="text-center align-middle">{{ menu_day|get_energy_day:"" }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td><b>Итого за период</b></td>
+                        {% for product_g in products_group_main %}
+                            <td class="table-success text-center align-middle">
+                                <b>{{ menu_days|get_map_gross_by_product_group_dates_interval:product_g.id }}</b></td>
+                            {% with maps_id_list|get_all_products_in_group_dates_interval:product_g.id as products_in_group %}
+                                {% for product in products_in_group %}
+                                    <td class="text-center align-middle">{{ menu_days|get_product_count_interval:product }}</td>
+                                {% endfor %}
+                            {% endwith %}
+                        {% endfor %}
+                        <td class="text-center align-middle"></td>
+                        <td class="text-center align-middle"></td>
+                        <td class="text-center align-middle"></td>
+                        <td class="text-center align-middle"></td>
+                        <td class="text-center align-middle">{{ menu_days|get_energy_interval:"" }}</td>
+                    </tr>
+                    <tr>
+                        <td><b>По норме</b></td>
+                        {% for product_g in products_group_main %}
+                            <td class="table-success text-center align-middle">
+                                <b>{{ product_g.norm_per_day|mult_with_round:day_count }}</b></td>
+                            {% with maps_id_list|get_all_products_in_group_dates_interval:product_g.id as products_in_group %}
+                                {% for product in products_in_group %}
+                                    <td></td>
+                                {% endfor %}
+                            {% endwith %}
+                        {% endfor %}
+                    </tr>
+                    </tbody>
+                </table>
+            {% endwith %}
+        {% else %}
+            <p>Список пуст</p>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block own_js %}
+    <script src="{% static 'menu/js/menu_CRUD.js' %}"></script>
+
+    {% for menu_day in menu_days %}
+        {% for meal_time in meal_times %}
+            <script>
+                $(document).ready(function () {
+                    $('#meal_select_{{ menu_day.id }}_{{ meal_time.id }}').select2({
+                        dropdownParent: $('#menu_day_modal_{{ menu_day.id }}')
+                    });
+                });
+            </script>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}

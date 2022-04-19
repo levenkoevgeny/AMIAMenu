@@ -1,0 +1,215 @@
+{% extends 'base_prod.html' %}
+
+{% load static %}
+{% load format_tags %}
+{% load product_tags %}
+{% load widget_tweaks %}
+
+{% block own_css %}{% endblock %}
+{% block title %}<title>Группы продуктов</title>{% endblock %}
+
+{% block content %}
+    {% for product_group in product_group_list %}
+        <div class="modal fade" id="product_group_modal_{{ product_group.id }}" tabindex="-1"
+             aria-labelledby="exampleModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ product_group.group_name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" class="product_update_group_form_class"
+                          id="{{ product_group.id }}">{% csrf_token %}
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">Наименование (название группы)</label>
+                                        <input type="text" class="form-control"
+                                               id="id_group_name_{{ product_group.id }}"
+                                               value="{{ product_group.group_name }}" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if product_group.replacement_for == product_group %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Норма на день</label>
+                                            <input type="number" step="0.01" class="form-control"
+                                                   id="id_norm_per_day_{{ product_group.id }}"
+                                                   value="{{ product_group.norm_per_day|formatted_float }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if product_group.replacement_for != product_group %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Замена для</label>
+                                            <select id="id_replacement_for_{{ product_group.id }}" class="form-select">
+                                                <option value="">------</option>
+                                                {% for product_group_ in products_group_list_main %}
+                                                    {% if product_group_.id == product_group.replacement_for.id %}
+                                                        <option value="{{ product_group_.id }}"
+                                                                selected>{{ product_group_ }}</option>
+                                                    {% else %}
+                                                        <option value="{{ product_group_.id }}">{{ product_group_ }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if product_group.replacement_for != product_group %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Норма замены на 100 г. осн. нормы</label>
+                                            <input type="text" class="form-control"
+                                                   id="id_norm_for_replacement_{{ product_group.id }}"
+                                                   value="{{ product_group.in_count }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                            <a class="btn btn-danger"
+                               href="javascript:delete_product_group({{ product_group.id }})">Удалить</a>
+                            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="container">
+        <br>
+        <h3>Нормы обеспечения продовольствием</h3>
+
+        <p>
+            <a class="link-secondary" data-bs-toggle="collapse" href="#product_group_filter" role="button"
+               aria-expanded="false" aria-controls="collapseExample">
+                Фильтр
+            </a>
+        </p>
+        <div class="collapse" id="product_group_filter">
+            <div class="card card-body">
+                <form action="{% url 'menu:product_groups' %}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Название группы</label>
+                                {% render_field filter.form.group_name class+="form-control" %}
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">Поиск</button>
+                    <a href="{% url 'menu:product_groups' %}" class="btn btn-secondary">Сбросить фильтр</a>
+                </form>
+            </div>
+        </div>
+        <br>
+
+        <form method="POST" id="add_product_group_form">{% csrf_token %}
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="is_main_checkbox" checked>
+                <label class="form-check-label">
+                    Является основной
+                </label>
+            </div>
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="mb-3">
+                        <label class="form-label">Наименование (название группы)</label>
+                        <input type="text" class="form-control" id="id_group_name_add" required>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <label class="form-label">Норма на день</label>
+                        <input type="number" step="0.01" class="form-control" id="id_norm_per_day" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="mb-3">
+                        <label class="form-label">Замена для</label>
+                        <select id="id_replacement_for" class="form-select" disabled>
+                            <option value="">------</option>
+                            {% for product_group in products_group_list_main %}
+                                <option value="{{ product_group.id }}">{{ product_group }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <label class="form-label">Норма замены на 100 г. осн. нормы</label>
+                        <input type="number" step="0.01" class="form-control" id="id_norm_for_replacement" disabled>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-secondary" id="add_product_group_form_button">Добавить
+                </button>
+            </div>
+        </form>
+
+        {% if products_group_list_main %}
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Название группы</th>
+                    <th scope="col">Норма в сутки, г.</th>
+                    <th scope="col">Замены</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for product_group in products_group_list_main %}
+                    <tr>
+                        <td>
+                            <a href="#product_group_modal_{{ product_group.id }}" data-bs-toggle="modal"
+                               class="link-secondary">
+                                <b>{{ product_group.group_name }}</b> <a
+                                    href="javascript:delete_product_group({{ product_group.id }})"
+                                    class="link-danger"><i
+                                    class="fas fa-trash" title="удалить"></i>Удалить</a><br>
+
+                            </a>
+                        </td>
+                        <td>{{ product_group.norm_per_day }}</td>
+                        <td>
+                            {% for sub_norm in products_group_list_not_main|get_sub_norm_from_main:product_group %}
+                                <a href="#product_group_modal_{{ sub_norm.id }}" data-bs-toggle="modal"
+                                   class="link-secondary">
+                                    {{ sub_norm.group_name }} - {{ sub_norm.in_count }} г. <a
+                                        href="javascript:delete_product_group({{ sub_norm.id }})" class="link-danger"><i
+                                        class="fas fa-trash" title="удалить"></i>Удалить</a><br>
+                                </a>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Список пуст</p>
+        {% endif %}
+
+    </div>
+{% endblock %}
+
+{% block own_js %}
+    <script src="{% static 'menu/js/product_group_CRUD.js' %}"></script>
+{% endblock %}

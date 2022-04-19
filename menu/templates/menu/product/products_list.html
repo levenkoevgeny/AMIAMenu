@@ -1,0 +1,252 @@
+{% extends 'base_prod.html' %}
+
+{% load static %}
+{% load product_tags %}
+{% load format_tags %}
+{% load widget_tweaks %}
+
+{% block own_css %}{% endblock %}
+{% block title %}<title>Продукты</title>{% endblock %}
+
+{% block content %}
+    <div class="container">
+        {% for wastage in wastage_list %}
+            <div class="modal fade" id="wastage_modal_{{ wastage.id }}" tabindex="-1"
+                 aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog model-lg modal-dialog-centered">
+
+                    <form class="wastage_modal_update_class" id="{{ wastage.id }}">{% csrf_token %}
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"
+                                    id="exampleModalLabel">{{ wastage.date_range.date_from|date:"d.m" }}
+                                    - {{ wastage.date_range.date_till|date:"d.m" }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Потеря, %</label>
+                                            {{ wastage.percent }}
+                                            <input type="number" class="form-control"
+                                                   value="{{ wastage.percent|formatted_float }}"
+                                                   id="id_percent_{{ wastage.id }}"
+                                                   step="0.01" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+
+        {% for product in products_list %}
+            <div class="modal fade" id="product_modal_{{ product.id }}" tabindex="-1"
+                 aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog model-lg modal-dialog-centered">
+
+                    <form class="product_modal_update_class" id="{{ product.id }}">{% csrf_token %}
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">{{ product }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Название продукта</label>
+                                            <input type="text" class="form-control"
+                                                   id="id_product_name_{{ product.id }}"
+                                                   value="{{ product.product_name }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Эн. цен. (кКал), 100 г. (Брутто)</label>
+                                            <input type="number" step="0.01" class="form-control"
+                                                   id="id_energy_value_{{ product.id }}"
+                                                   value="{{ product.energy_value|formatted_float }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Белки, 100 г. (Нетто)</label>
+                                            <input type="number" step="0.01" class="form-control"
+                                                   id="id_proteins_{{ product.id }}"
+                                                   value="{{ product.proteins|formatted_float }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Жиры, 100 г. (Нетто)</label>
+                                            <input type="number" step="0.01" class="form-control"
+                                                   id="id_fats_{{ product.id }}"
+                                                   value="{{ product.fats|formatted_float }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Углеводы, 100 г. (Нетто)</label>
+                                            <input type="number" step="0.01" class="form-control"
+                                                   id="id_carbohydrates_{{ product.id }}"
+                                                   value="{{ product.carbohydrates|formatted_float }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+
+        <br>
+        <h1>Продукты</h1>
+
+        <p>
+            <a class="link-secondary" data-bs-toggle="collapse" href="#products_filter" role="button"
+               aria-expanded="false" aria-controls="collapseExample">
+                Фильтр
+            </a>
+        </p>
+        <div class="collapse" id="products_filter">
+            <div class="card card-body">
+                <form action="{% url 'menu:products' %}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Название</label>
+                                {% render_field filter.form.product_name class+="form-control" %}
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">Поиск</button>
+                    <a href="{% url 'menu:products' %}" class="btn btn-secondary">Сбросить фильтр</a>
+                </form>
+            </div>
+        </div>
+
+        <br>
+        <form id="add_product_form">{% csrf_token %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="form-label">Название продукта</label>
+                        <input type="text" class="form-control" id="id_product_name_" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="mb-3">
+                        <label class="form-label">Эн. цен. (кКал), 100 г. (Брутто)</label>
+                        <input type="number" step="0.01" class="form-control" id="id_energy_value" required>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="mb-3">
+                        <label class="form-label">Белки, 100 г. (Нетто)</label>
+                        <input type="number" step="0.01" class="form-control" id="id_proteins" required>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="mb-3">
+                        <label class="form-label">Жиры, 100 г. (Нетто)</label>
+                        <input type="number" step="0.01" class="form-control" id="id_fats" required>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="mb-3">
+                        <label class="form-label">Углеводы, 100 г. (Нетто)</label>
+                        <input type="number" step="0.01" class="form-control" id="id_carbohydrates" required>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-secondary" id="add_product_form_button">Добавить</button>
+            </div>
+        </form>
+        {% if products_list %}
+            <table class="table">
+                <thead>
+                <tr>
+                    <th rowspan="2" scope="col">№ п.п</th>
+                    <th rowspan="2" scope="col">Наименование</th>
+                    <th colspan="{{ treatment_kind_list.count }}" scope="col" class="text-center">Потери при обработке
+                    </th>
+                </tr>
+                <tr>
+                    {% for treatment_kind in treatment_kind_list %}
+                        <th>{{ treatment_kind.treatment_kind }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for product in products_list %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <b>
+                                <a href="#product_modal_{{ product.id }}" data-bs-toggle="modal"
+                                   class="link-secondary">{{ product.product_name }}</a>
+                            </b><br>
+                            Эн. цен - {{ product.energy_value }}<br>
+                            Белки -{{ product.proteins }}<br>
+                            Жиры - {{ product.fats }}<br>
+                            Углеводы - {{ product.carbohydrates }}<br>
+                        </td>
+                        {% for treatment_kind in treatment_kind_list %}
+                            <td>
+                                {% for wastage in product.wastagebydaterange_set.all|get_wastage_by_treatment:treatment_kind.id %}
+                                    {% if wastage.percent != 0 %}
+                                        <nobr><a href="#wastage_modal_{{ wastage.id }}" data-bs-toggle="modal"
+                                           class="link-secondary">{{ wastage.date_range.date_from|date:"d.m" }} -
+                                            {{ wastage.date_range.date_till|date:"d.m" }}</a>&nbsp; &nbsp;
+                                        <b>{{ wastage.percent }} %</b></nobr><br>
+                                    {% else %}
+                                        <a href="#wastage_modal_{{ wastage.id }}" data-bs-toggle="modal"
+                                           class="link-secondary">{{ wastage.date_range.date_from|date:"d.m" }} -
+                                            {{ wastage.date_range.date_till|date:"d.m" }}</a><br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Список пуст</p>
+        {% endif %}
+
+    </div>
+{% endblock %}
+
+{% block own_js %}
+    <script src="{% static 'menu/js/product_CRUD.js' %}"></script>
+{% endblock %}

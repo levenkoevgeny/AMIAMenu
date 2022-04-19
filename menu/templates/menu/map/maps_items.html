@@ -1,0 +1,374 @@
+{% extends 'base_prod.html' %}
+{% load math_tags %}
+{% load static %}
+{% load dict_tags %}
+{% load sort_tags %}
+{% load format_tags %}
+{% load menu_items_tags %}
+
+{% block own_css %}{% endblock %}
+{% block title %}<title>Технологическая карта</title>{% endblock %}
+
+{% block content %}
+
+
+    <div class="modal fade" id="description_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="description_update_form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Описание технологического процесса</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="id_description" cols="30"
+                                      rows="10">{{ map_with_items.description }}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="map_data_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="map_data_update_form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Редактирование технологической карты</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Номер технологической карты</label>
+                            <input type="text" class="form-control" id="id_map_number"
+                                   value="{{ map_with_items.map_number }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Название технологической карты</label>
+                            <input type="text" class="form-control" id="id_map_name"
+                                   value="{{ map_with_items.map_name }}" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container">
+        {% for product_in_map in map_with_items.productsinmap_set.all %}
+            <div class="modal fade" id="product_in_map_modal_{{ product_in_map.id }}" tabindex="-1"
+                 aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog model-lg modal-dialog-centered">
+                    <form class="product_in_map_update_class" id="{{ product_in_map.id }}">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">{{ product_in_map.product }}
+                                    ({{ product_in_map.dish_category }}) {{ product_in_map.product_count_gross }}
+                                    г.</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Продукт</label>
+                                            <select id="id_product_{{ product_in_map.id }}" class="form-select"
+                                                    required>
+                                                {% for product in product_list %}
+                                                    {% if product.id == product_in_map.product.id %}
+                                                        <option value="{{ product.id }}"
+                                                                selected>{{ product.product_name }}</option>
+                                                    {% else %}
+                                                        <option value="{{ product.id }}">{{ product.product_name }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Масса брутто</label>
+                                            <input type="number" class="form-control"
+                                                   id="id_product_count_gross_{{ product_in_map.id }}" min="0"
+                                                   step="0.1"
+                                                   value="{{ product_in_map.product_count_gross|formatted_float }}"
+                                                   required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Категория</label>
+                                            <select id="id_dish_category_{{ product_in_map.id }}" class="form-select"
+                                                    required>
+                                                {% for dish_category in dish_categories %}
+                                                    {% if dish_category.id == product_in_map.dish_category.id %}
+                                                        <option value="{{ dish_category.id }}"
+                                                                selected>{{ dish_category.dish_category }}</option>
+                                                    {% else %}
+                                                        <option value="{{ dish_category.id }}">{{ dish_category.dish_category }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Обработка</label>
+                                            <select id="id_treatments_{{ product_in_map.id }}" class="form-select"
+                                                    multiple
+                                                    style="width: 100%">
+                                                {% for treatment in treatments %}
+                                                    {% if treatment in product_in_map.treatments.all %}
+                                                        <option value="{{ treatment.id }}"
+                                                                selected>{{ treatment.treatment_kind }}</option>
+                                                    {% else %}
+                                                        <option value="{{ treatment.id }}">{{ treatment.treatment_kind }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">По какой норме</label>
+                                            <select id="id_group_{{ product_in_map.id }}" class="form-select" required>
+                                                <option value="">----</option>
+                                                {% for product_group_ in product_group_list %}
+                                                    {% if product_group_.id == product_in_map.group.id %}
+                                                        <option value="{{ product_group_.id }}"
+                                                                selected>{{ product_group_.get_full_title }}</option>
+                                                    {% else %}
+                                                        <option value="{{ product_group_.id }}">{{ product_group_.get_full_title }}</option>
+                                                    {% endif %}
+
+
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                <a href="javascript:delete_product_in_map({{ product_in_map.id }})"
+                                   class="btn btn-danger">Удалить</a>
+                                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+
+        <br>
+        <h3>Технологическая карта № {{ map_with_items.map_number }} <a href="#map_data_modal" data-bs-toggle="modal"
+                                                                       class="link-secondary">(ред.)</a></h3>
+        <p>на кулинарную продукцию</p>
+        <h5>{{ map_with_items.map_name }}</h5>
+
+
+        <form action="" id="id_product_in_map_add">{% csrf_token %}
+            <input type="hidden" value="{{ map_with_items.id }}" id="id_map">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label">Продукт</label>
+                        <select id="id_product" class="form-select my-select2" required>
+                            <option value="">----</option>
+                            {% for product in product_list %}
+                                <option value="{{ product.id }}">{{ product.product_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label">Обработка</label>
+                        <select id="id_treatments" class="form-select my-select2" multiple style="width: 100%">
+                            {% for treatment in treatments %}
+                                <option value="{{ treatment.id }}">{{ treatment.treatment_kind }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="lg-3">
+                        <label class="form-label">Масса брутто</label>
+                        <input type="number" class="form-control" id="id_product_count_gross" min="0" step="0.1"
+                               required>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="mb-3">
+                        <label class="form-label">Категория</label>
+                        <select id="id_dish_category" class="form-select" required>
+                            <option value="">----</option>
+                            {% for dish_category in dish_categories %}
+                                <option value="{{ dish_category.id }}">{{ dish_category.dish_category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label">По какой норме</label>
+                        <select id="id_group" class="form-select" required>
+                            <option value="">----</option>
+                            {% for product_group in product_group_list %}
+                                <option value="{{ product_group.id }}">{{ product_group.get_full_title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+            <button type="submit" class="btn btn-secondary">Добавить</button>
+        </form>
+        <br>
+
+        <div class="input-group mb-4" style="width: 400px;">
+            <span class="input-group-text">Дата расчета</span>
+            <input type="date" class="form-control" value="{{ menu_date|date:"Y-m-d" }}" id="id_menu_date">
+        </div>
+
+        <table class="table table-striped table-hover table-bordered">
+            <thead>
+            <tr>
+                <th rowspan="2">Наименование сырья</th>
+
+                {#                <th rowspan="2">Категория</th>#}
+                {#                <th rowspan="2">Вид обработки</th>#}
+                {#                <th rowspan="2">Группа продуктов</th>#}
+                <th colspan="2">
+                    <nobr>Расход сырья на I порцию,( г)</nobr>
+                </th>
+                <th rowspan="2">Категория</th>
+                <th rowspan="2">Вид обработки</th>
+                <th rowspan="2">Группа продуктов</th>
+                <th rowspan="2"></th>
+            </tr>
+            <tr>
+                <th>Брутто, г.</th>
+                <th>Нетто, г.</th>
+                {#                <th></th>#}
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in map_with_items.productsinmap_set.all %}
+                <tr>
+                    <td>
+                        <a href="#product_in_map_modal_{{ item.id }}" data-bs-toggle="modal"
+                           class="link-secondary">{{ item.product }}</a>
+                    </td>
+
+                    <td>{{ item.product_count_gross }}</td>
+                    <td>
+                        {% with item|get_net_weight_treatment_array_property:menu_date as net_weights %}
+
+                            {% for treatments in item.treatments.all|sort_by:"id" %}
+                                <nobr>{{ net_weights|get_sub_dict:treatments.id }} /
+                                </nobr>
+                            {% endfor %}
+                        {% endwith %}
+                    </td>
+                    <td>{{ item.dish_category }}</td>
+                    <td>
+                        {% for treatments in item.treatments.all|sort_by:"id" %}
+                            <b>{{ forloop.counter }})</b> {{ treatments.treatment_kind }}<br>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if item.group.replacement_for != item.group %}
+                            {{ item.group.group_name }} замена для <b>{{ item.group.replacement_for.group_name }}</b> (
+                            {{ item.group.in_count }} на 100 г.)
+                        {% else %}
+                            <b>{{ item.group.group_name }}</b>
+                        {% endif %}
+                    </td>
+                    <td><a href="javascript:delete_product_in_map({{ item.id }})" class="link-danger">удалить</a></td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+        <div class="shadow p-3 mb-5 bg-body rounded">
+            <h5>Описание технологического процесса <a href="#description_modal" data-bs-toggle="modal"
+                                                      class="link-secondary">(ред.)</a></h5>
+            {{ map_with_items.description }}
+        </div>
+
+        <h5>Выход нетто, г.</h5>
+
+        <b class="mb-3">Всего - {{ net_weights|get_sub_dict:'full_net_weight' }}</b><br>
+        По категориям:<br>
+        {% for dish_category in dish_categories %}
+            <b>{{ dish_category }}</b> -
+            {{ net_weights|get_sub_dict:dish_category.id }}<br>
+        {% endfor %}
+        <br>
+        <h5>Выход брутто, г. (на 100 г. продукта)</h5>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Белки, г</th>
+                <th>Жиры, г</th>
+                <th>Углеводы, г</th>
+                <th>Энергетическая ценность, ккал</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{ values|get_sub_dict:"protein" }}</td>
+                <td>{{ values|get_sub_dict:"fats" }}</td>
+                <td>{{ values|get_sub_dict:"carbohydrates" }}</td>
+                <td>{{ values|get_sub_dict:"energy" }}</td>
+            </tr>
+
+            </tbody>
+        </table>
+
+    </div>
+{% endblock %}
+
+{% block own_js %}
+    <script src="{% static 'menu/js/products_in_map_CRUD.js' %}"></script>
+
+
+    {% for product_in_map in map_with_items.productsinmap_set.all %}
+        <script>
+            $(document).ready(function () {
+                $('#id_treatments_{{ product_in_map.id }}').select2({
+                    dropdownParent: $('#product_in_map_modal_{{ product_in_map.id }}')
+                });
+            });
+        </script>
+    {% endfor %}
+
+{% endblock %}

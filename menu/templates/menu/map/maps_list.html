@@ -1,0 +1,93 @@
+{% extends 'base_prod.html' %}
+
+{% load static %}
+{% load widget_tweaks %}
+
+{% block own_css %}{% endblock %}
+{% block title %}<title>Технологические карты</title>{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <br>
+        <h3>Технологические карты</h3>
+
+        <p>
+            <a class="link-secondary" data-bs-toggle="collapse" href="#maps_filter" role="button"
+               aria-expanded="false" aria-controls="collapseExample">
+                Фильтр
+            </a>
+        </p>
+        <div class="collapse" id="maps_filter">
+            <div class="card card-body">
+                <form action="{% url 'menu:maps' %}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Номер карты</label>
+                                {% render_field filter.form.map_number class+="form-control" %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Название карты</label>
+                                {% render_field filter.form.map_name class+="form-control" %}
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">Поиск</button>
+                    <a href="{% url 'menu:maps' %}" class="btn btn-secondary">Сбросить фильтр</a>
+                </form>
+            </div>
+        </div>
+
+
+        <form id="map_add_form">{% csrf_token %}
+            <div class="row d-flex align-items-end">
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <label class="form-label">Номер карты</label>
+                        <input type="text" class="form-control" id="id_map_number_" required>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <label class="form-label">Название карты</label>
+                        <input type="text" class="form-control" id="id_map_name_" required>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-secondary" id="add_product_form_button">Добавить</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+
+        <br>
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">№ п.п</th>
+                <th scope="col">Номер карты</th>
+                <th scope="col">Название карты</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for map in maps_list %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ map.map_number }}</td>
+                    <td><a href="{% url 'menu:maps-items' map.id %}" class="link-secondary">{{ map.map_name }}</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </div>
+
+{% endblock %}
+
+{% block own_js %}
+     <script src="{% static 'menu/js/map_CRUD.js' %}"></script>
+{% endblock %}
