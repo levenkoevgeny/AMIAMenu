@@ -3,18 +3,6 @@ from datetime import datetime
 
 from django.db.models import Sum
 
-DISH_CATEGORIES = [
-    (1, 'Главное блюдо'),
-    (2, 'Гарнир'),
-    (3, 'Соус'),
-    (4, 'Вспомогательные продукты'),
-]
-
-TREATMENT_KIND = [
-    (1, 'Первичная обработка'),
-    (2, 'Тепловая обработка'),
-]
-
 
 class DishCategory(models.Model):
     dish_category = models.CharField(max_length=100, verbose_name="Категория блюда")

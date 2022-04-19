@@ -75,12 +75,31 @@ def get_net_weights(map, date):
     return map.get_net_weights_by_dish_category(date)
 
 
+@register.filter(name='get_net_weights_day')
+def get_net_weights_day(menu_day, date):
+
+    return 'map.get_net_weights_by_dish_category(date)'
+
+
+@register.filter(name='get_net_weights_interval')
+def get_net_weights_interval(menu_days, date):
+    return 'map.get_net_weights_by_dish_category(date)'
+
+
+# три метода для вычисления энергетической ценности (1 - для одной карты, 2 - для дня, 3 - для интервала).
+# Можно было сделать однотипные методы для получения всех данных (белки, жиры, углеводы, энергетическая ценность)
+
+@register.filter(name='get_values')
+def get_values(map, date):
+    return map.get_values(date)
+
+
 @register.filter(name='get_energy_day')
 def get_energy_day(menu_day, date):
     energy_sum = 0
     for map in menu_day.technological_maps.all():
-        energy_sum += map.get_values()['energy']
-    return energy_sum
+        energy_sum += map.get_values(menu_day.menu_day_date)['energy']
+    return round(energy_sum, 2) if energy_sum > 0 else ''
 
 
 @register.filter(name='get_energy_interval')
@@ -88,26 +107,5 @@ def get_energy_interval(menu_days, date):
     energy_sum = 0
     for menu_day in menu_days:
         for map in menu_day.technological_maps.all():
-            energy_sum += map.get_values()['energy']
-    return energy_sum
-
-
-@register.filter(name='get_values')
-def get_values(map, date):
-    return map.get_values(date)
-
-
-@register.filter(name='get_values_day')
-def get_values_day(menu_day, date):
-
-    # for map in menu_day.technological_maps.all():
-    #
-    #     for dish_category in DishCategory.objects.all():
-
-
-    return 'map.get_values(date)'
-
-
-@register.filter(name='get_values_interval')
-def get_values(menu_days, date):
-    return 'map.get_values(date)'
+            energy_sum += map.get_values(menu_day.menu_day_date)['energy']
+    return round(energy_sum, 2) if energy_sum > 0 else ''
