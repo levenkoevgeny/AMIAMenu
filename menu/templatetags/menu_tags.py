@@ -3,7 +3,6 @@ from django.db.models import Sum
 
 from menu.models import Map, ProductsInMap, Product, DishCategory
 
-
 register = template.Library()
 
 
@@ -77,13 +76,33 @@ def get_net_weights(map, date):
 
 @register.filter(name='get_net_weights_day')
 def get_net_weights_day(menu_day, date):
-
-    return 'map.get_net_weights_by_dish_category(date)'
+    net_weight_dict = {}
+    for dish_category in DishCategory.objects.all():
+        net_weight = 0
+        for map in menu_day.technological_maps.all():
+            net_weight += map.get_net_weights_by_dish_category(menu_day.menu_day_date)[dish_category.id]
+        net_weight_dict[dish_category.id] = net_weight
+    full_net_weight = 0
+    for k in net_weight_dict:
+        full_net_weight += net_weight_dict[k]
+    net_weight_dict['full_net_weight'] = full_net_weight
+    return net_weight_dict
 
 
 @register.filter(name='get_net_weights_interval')
 def get_net_weights_interval(menu_days, date):
-    return 'map.get_net_weights_by_dish_category(date)'
+    net_weight_dict = {}
+    for dish_category in DishCategory.objects.all():
+        net_weight = 0
+        for menu_day in menu_days:
+            for map in menu_day.technological_maps.all():
+                net_weight += map.get_net_weights_by_dish_category(menu_day.menu_day_date)[dish_category.id]
+        net_weight_dict[dish_category.id] = net_weight
+    full_net_weight = 0
+    for k in net_weight_dict:
+        full_net_weight += net_weight_dict[k]
+    net_weight_dict['full_net_weight'] = full_net_weight
+    return net_weight_dict
 
 
 # три метода для вычисления энергетической ценности (1 - для одной карты, 2 - для дня, 3 - для интервала).

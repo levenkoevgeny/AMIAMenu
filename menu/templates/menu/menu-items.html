@@ -163,10 +163,12 @@
                                     {% endfor %}
                                 {% endwith %}
                             {% endfor %}
-                            <td class="text-center align-middle"></td>
-                            <td class="text-center align-middle"></td>
-                            <td class="text-center align-middle"></td>
-                            <td class="text-center align-middle"></td>
+                            {% with menu_day|get_net_weights_day:"" as net_weights_day %}
+                                <td class="text-center align-middle">{{ net_weights_day|get_sub_dict:'full_net_weight' }}</td>
+                                {% for dish_category in dish_categories %}
+                                    <td class="text-center align-middle">{{ net_weights_day|get_sub_dict:dish_category.id }}</td>
+                                {% endfor %}
+                            {% endwith %}
                             <td class="text-center align-middle">{{ menu_day|get_energy_day:"" }}</td>
                         </tr>
                     {% endfor %}
@@ -181,10 +183,12 @@
                                 {% endfor %}
                             {% endwith %}
                         {% endfor %}
-                        <td class="text-center align-middle"></td>
-                        <td class="text-center align-middle"></td>
-                        <td class="text-center align-middle"></td>
-                        <td class="text-center align-middle"></td>
+                        {% with menu_days|get_net_weights_interval:"" as net_weights_interval %}
+                                <td class="text-center align-middle">{{ net_weights_interval|get_sub_dict:'full_net_weight' }}</td>
+                                {% for dish_category in dish_categories %}
+                                    <td class="text-center align-middle">{{ net_weights_interval|get_sub_dict:dish_category.id }}</td>
+                                {% endfor %}
+                            {% endwith %}
                         <td class="text-center align-middle">{{ menu_days|get_energy_interval:"" }}</td>
                     </tr>
                     <tr>
