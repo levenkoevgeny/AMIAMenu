@@ -117,7 +117,7 @@ def get_values(map, date):
 def get_energy_day(menu_day, date):
     energy_sum = 0
     for map in menu_day.technological_maps.all():
-        energy_sum += map.get_values(menu_day.menu_day_date)['energy']
+        energy_sum += map.get_values(menu_day.menu_day_date)['energy_full']
     return round(energy_sum, 2) if energy_sum > 0 else ''
 
 
@@ -126,5 +126,5 @@ def get_energy_interval(menu_days, date):
     energy_sum = 0
     for menu_day in menu_days:
         for map in menu_day.technological_maps.all():
-            energy_sum += map.get_values(menu_day.menu_day_date)['energy']
+            energy_sum += map.get_values(menu_day.menu_day_date)['energy_full']
     return round(energy_sum, 2) if energy_sum > 0 else ''

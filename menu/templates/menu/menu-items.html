@@ -147,7 +147,7 @@
                                         {% endfor %}
                                     {% endwith %}
                                     {% with map|get_values:menu_day.menu_day_date as values %}
-                                        <td class="text-center align-middle">{{ values|get_sub_dict:"energy" }}</td>
+                                        <td class="text-center align-middle">{{ values|get_sub_dict:"energy_full" }}</td>
                                     {% endwith %}
                                 </tr>
                             {% endfor %}
