@@ -42,6 +42,28 @@
 
 
         <form id="map_add_form">{% csrf_token %}
+
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="id_has_parents">
+                            <label class="form-check-label">
+                                На основе родительской карты
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <select class="form-select" id="id_map_parent_select" disabled>
+                            <option value="" selected>-------</option>
+                            {% for map in maps_list %}
+                                <option value="{{ map.id }}">{{ map }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="row d-flex align-items-end">
                 <div class="col-lg-4">
                     <div class="mb-3">
@@ -89,5 +111,5 @@
 {% endblock %}
 
 {% block own_js %}
-     <script src="{% static 'menu/js/map_CRUD.js' %}"></script>
+    <script src="{% static 'menu/js/map_CRUD.js' %}"></script>
 {% endblock %}

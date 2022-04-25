@@ -20,7 +20,6 @@ from dateutil.relativedelta import *
 
 
 def menu_items(request):
-
     if 'menu_day_date_start' in request.GET and 'menu_day_date_end' in request.GET:
         f = MenuDayFilter(request.GET, queryset=MenuDay.objects.all())
         menu_days = f.qs
@@ -33,8 +32,10 @@ def menu_items(request):
 
     if 'menu_day_date_start' in request.GET and 'menu_day_date_end' in request.GET:
 
-        date_start_str = request.GET['menu_day_date_start'] if request.GET['menu_day_date_start'] != '' else str(datetime.now().date())
-        date_end_str = request.GET['menu_day_date_end'] if request.GET['menu_day_date_end'] != '' else str(datetime.now().date())
+        date_start_str = request.GET['menu_day_date_start'] if request.GET['menu_day_date_start'] != '' else str(
+            datetime.now().date())
+        date_end_str = request.GET['menu_day_date_end'] if request.GET['menu_day_date_end'] != '' else str(
+            datetime.now().date())
 
         date_start = datetime.strptime(date_start_str, '%Y-%m-%d').date()
         date_end = datetime.strptime(date_end_str, '%Y-%m-%d').date()
@@ -168,3 +169,22 @@ def menu_day_update_maps(request):
             map_ = get_object_or_404(Map, pk=map_id)
             MapsInMenuDay.objects.create(menu_day=menu_day, map=map_, meal_time=meal_time)
     return Response('Ok', status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def make_map_clone(request):
+    try:
+        parent = get_object_or_404(Map, pk=request.data['map_parent'])
+        new_map = Map(map_number=request.data['map_number'], map_name=request.data['map_name'])
+        new_map.save()
+
+        for p_in_m in parent.productsinmap_set.all():
+            new_p_in_map = ProductsInMap.objects.create(map=new_map, product=p_in_m.product, group=p_in_m.group,
+                                                        product_count_gross=p_in_m.product_count_gross,
+                                                        product_count_gross_normalize=p_in_m.product_count_gross_normalize,
+                                                        dish_category=p_in_m.dish_category)
+            new_p_in_map.treatments.add(*p_in_m.treatments.all())
+            new_p_in_map.save()
+        return Response('Ok', status.HTTP_200_OK)
+    except Exception:
+        return Response('Bad request', status.HTTP_400_BAD_REQUEST)

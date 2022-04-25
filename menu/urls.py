@@ -10,6 +10,7 @@ urlpatterns = [
     path('maps', views.maps, name='maps'),
     path('maps/<map_id>/items', views.maps_items, name='maps-items'),
     path('menu-day-update-maps/', views.menu_day_update_maps, name='menu_day_update_maps'),
+    path('make_map_clone/', views.make_map_clone, name='make_map_clone'),
 
     # path('card/input', views.card_input, name='card_input'),
     # path('card/<card_id>', views.get_card, name='get_card'),
