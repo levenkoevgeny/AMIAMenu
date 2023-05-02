@@ -4,19 +4,25 @@ from datetime import datetime
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.db.models import F
-
+from django.conf import settings
+from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework import permissions
+from rest_framework.permissions import IsAuthenticated
 
 from .models import MenuDay, Product, ProductGroup, MealTime, Map, MapsInMenuDay, ProductsInMap, DishCategory, \
-    TreatmentKind, WastageByDateRange
+    TreatmentKind, WastageByDateRange, DateRange
 from .serializers import ProductSerializer, ProductGroupSerializer, MapSerializer, ProductsInMapSerializer, \
-    MapsInMenuDaySerializer, MealTimeSerializer, MenuDaySerializer, WastageByDateRangeSerializer
+    MapsInMenuDaySerializer, MealTimeSerializer, MenuDaySerializer, WastageByDateRangeSerializer, UserSerializer, \
+    TreatmentKindSerializer, DateRangeSerializer
 from .filters import MenuDayFilter, ProductGroupFilter, ProductFilter, MapFilter
 
 from dateutil.relativedelta import *
+from jose import jwt
 
 
 def menu_items(request):
@@ -157,6 +163,16 @@ class WastageByDateRangeViewSet(viewsets.ModelViewSet):
     serializer_class = WastageByDateRangeSerializer
 
 
+class TreatmentKindViewSet(viewsets.ModelViewSet):
+    queryset = TreatmentKind.objects.all()
+    serializer_class = TreatmentKindSerializer
+
+
+class DateRangeViewSet(viewsets.ModelViewSet):
+    queryset = DateRange.objects.all()
+    serializer_class = DateRangeSerializer
+
+
 @api_view(['POST'])
 def menu_day_update_maps(request):
     menu_day = get_object_or_404(MenuDay, pk=request.data['menu_day_id'])
@@ -188,3 +204,21 @@ def make_map_clone(request):
         return Response('Ok', status.HTTP_200_OK)
     except Exception:
         return Response('Bad request', status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_me(request):
+    try:
+        token = request.META['HTTP_AUTHORIZATION'].split(" ")[1]
+        payload = jwt.decode(token, key=settings.SIMPLE_JWT['SIGNING_KEY'], algorithms=['HS256'])
+    except jwt.JWTError:
+        return Response(status=status.HTTP_403_FORBIDDEN)
+    try:
+        user_data = User.objects.get(pk=payload['user_id'])
+        serializer = UserSerializer(user_data)
+        return Response(serializer.data)
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    except Exception:
+        return Response(status=status.HTTP_400_BAD_REQUEST)

@@ -2,6 +2,7 @@ from django.db import models
 from datetime import datetime
 
 from django.db.models import Sum
+from django.contrib.auth.models import AbstractUser
 
 
 class DishCategory(models.Model):
@@ -34,6 +35,10 @@ class DateRange(models.Model):
 
     def __str__(self):
         return "{0} - {1}".format(str(self.date_from), str(self.date_till))
+
+    @property
+    def get_formatted_data(self):
+        return "{0}.{1} - {2}.{3}".format(str(self.date_from.day), str(self.date_from.month), str(self.date_till.day), str(self.date_till.month))
 
     class Meta:
         ordering = ('date_from',)
