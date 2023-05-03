@@ -16,11 +16,11 @@ class WastageByDateRangeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WastageByDateRange
-        fields = ['percent', 'treatment_kind', 'date_range']
+        fields = ['id', 'percent', 'treatment_kind', 'date_range']
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    wastage_list = WastageByDateRangeSerializer(source='wastagebydaterange_set', many=True)
+    wastage_list = WastageByDateRangeSerializer(source='wastagebydaterange_set', many=True, read_only=True)
 
     class Meta:
         model = Product

@@ -126,51 +126,63 @@ def maps_items(request, map_id):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    filterset_fields = {'product_name': ['icontains']}
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class ProductGroupViewSet(viewsets.ModelViewSet):
     queryset = ProductGroup.objects.all()
     serializer_class = ProductGroupSerializer
+    filterset_fields = {'group_name': ['icontains']}
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class MapViewSet(viewsets.ModelViewSet):
     queryset = Map.objects.all()
     serializer_class = MapSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class ProductsInMapViewSet(viewsets.ModelViewSet):
     queryset = ProductsInMap.objects.all()
     serializer_class = ProductsInMapSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class MapsInMenuDayViewSet(viewsets.ModelViewSet):
     queryset = MapsInMenuDay.objects.all()
     serializer_class = MapsInMenuDaySerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class MealTimeViewSet(viewsets.ModelViewSet):
     queryset = MealTime.objects.all()
     serializer_class = MealTimeSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class MenuDayViewSet(viewsets.ModelViewSet):
     queryset = MenuDay.objects.all()
     serializer_class = MenuDaySerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class WastageByDateRangeViewSet(viewsets.ModelViewSet):
     queryset = WastageByDateRange.objects.all()
     serializer_class = WastageByDateRangeSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class TreatmentKindViewSet(viewsets.ModelViewSet):
     queryset = TreatmentKind.objects.all()
     serializer_class = TreatmentKindSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class DateRangeViewSet(viewsets.ModelViewSet):
     queryset = DateRange.objects.all()
     serializer_class = DateRangeSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 @api_view(['POST'])
