@@ -6,6 +6,7 @@ from dateutil.relativedelta import *
 from menu.models import MenuDay
 
 
+
 class Command(BaseCommand):
     help = 'Fill the calendar'
 
