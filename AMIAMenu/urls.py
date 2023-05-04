@@ -16,6 +16,7 @@ from menu import views
 router = routers.DefaultRouter()
 router.register(r'products', views.ProductViewSet)
 router.register(r'product-groups', views.ProductGroupViewSet)
+router.register(r'product-groups-select2', views.ProductGroupViewSetForSelect2)
 router.register(r'maps', views.MapViewSet)
 router.register(r'products-in-map', views.ProductsInMapViewSet)
 router.register(r'maps-in-menu', views.MapsInMenuDayViewSet)

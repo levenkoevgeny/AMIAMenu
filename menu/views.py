@@ -6,6 +6,8 @@ from django.shortcuts import get_object_or_404
 from django.db.models import F
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.db.models import F
+
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -18,7 +20,7 @@ from .models import MenuDay, Product, ProductGroup, MealTime, Map, MapsInMenuDay
     TreatmentKind, WastageByDateRange, DateRange
 from .serializers import ProductSerializer, ProductGroupSerializer, MapSerializer, ProductsInMapSerializer, \
     MapsInMenuDaySerializer, MealTimeSerializer, MenuDaySerializer, WastageByDateRangeSerializer, UserSerializer, \
-    TreatmentKindSerializer, DateRangeSerializer
+    TreatmentKindSerializer, DateRangeSerializer, ProductGroupSerializerForSelect2
 from .filters import MenuDayFilter, ProductGroupFilter, ProductFilter, MapFilter
 
 from dateutil.relativedelta import *
@@ -135,6 +137,12 @@ class ProductGroupViewSet(viewsets.ModelViewSet):
     serializer_class = ProductGroupSerializer
     filterset_fields = {'group_name': ['icontains']}
     permission_classes = [permissions.IsAuthenticated]
+
+
+class ProductGroupViewSetForSelect2(viewsets.ModelViewSet):
+    queryset = ProductGroup.objects.filter(replacement_for=F('pk'))
+    serializer_class = ProductGroupSerializerForSelect2
+    filterset_fields = {'group_name': ['icontains']}
 
 
 class MapViewSet(viewsets.ModelViewSet):

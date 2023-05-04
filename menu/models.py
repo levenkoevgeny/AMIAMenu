@@ -61,6 +61,14 @@ class ProductGroup(models.Model):
             self.replacement_for = self
             self.save()
 
+    @property
+    def get_replacements(self):
+        return ProductGroup.objects.filter(replacement_for__productgroup=self)
+
+    @property
+    def text(self):
+        return self.group_name
+
     def __str__(self):
         return "{0} - {1} г.".format(self.group_name, self.norm_per_day)
 

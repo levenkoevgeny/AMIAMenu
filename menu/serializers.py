@@ -27,10 +27,25 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'product_name', 'energy_value', 'proteins', 'fats', 'carbohydrates', 'wastage_list']
 
 
-class ProductGroupSerializer(serializers.ModelSerializer):
+class ProductGroupManySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = ProductGroup
-        fields = '__all__'
+        fields = ['id', 'group_name', 'norm_per_day', 'in_count', 'replacement_for']
+
+
+class ProductGroupSerializer(serializers.ModelSerializer):
+    replacements = ProductGroupManySerializer(source='get_replacements', many=True, read_only=True)
+
+    class Meta:
+        model = ProductGroup
+        fields = ['id', 'group_name', 'norm_per_day', 'replacement_for', 'in_count', 'replacements']
+
+
+class ProductGroupSerializerForSelect2(serializers.ModelSerializer):
+    class Meta:
+        model = ProductGroup
+        fields = ['id', 'text']
 
 
 class DateRangeSerializer(serializers.ModelSerializer):
