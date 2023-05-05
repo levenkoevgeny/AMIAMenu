@@ -60,6 +60,12 @@ class MapSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class MapSerializerForSelect2(serializers.ModelSerializer):
+    class Meta:
+        model = Map
+        fields = ['id', 'text']
+
+
 class ProductsInMapSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductsInMap

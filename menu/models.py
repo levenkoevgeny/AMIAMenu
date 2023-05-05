@@ -151,6 +151,10 @@ class Map(models.Model):
     def __str__(self):
         return 'Карта № {0} - {1}'.format(self.map_number, self.map_name)
 
+    @property
+    def text(self):
+        return self.map_name
+
     # получение масс нетто по категориям блюд (гарнир, основное блюдо и т.д.)
     def get_net_weights_by_dish_category(self, menu_date=datetime.now().date()):
         today_month = menu_date.month

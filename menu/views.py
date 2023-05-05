@@ -15,12 +15,13 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
 
 from .models import MenuDay, Product, ProductGroup, MealTime, Map, MapsInMenuDay, ProductsInMap, DishCategory, \
     TreatmentKind, WastageByDateRange, DateRange
 from .serializers import ProductSerializer, ProductGroupSerializer, MapSerializer, ProductsInMapSerializer, \
     MapsInMenuDaySerializer, MealTimeSerializer, MenuDaySerializer, WastageByDateRangeSerializer, UserSerializer, \
-    TreatmentKindSerializer, DateRangeSerializer, ProductGroupSerializerForSelect2
+    TreatmentKindSerializer, DateRangeSerializer, ProductGroupSerializerForSelect2, MapSerializerForSelect2
 from .filters import MenuDayFilter, ProductGroupFilter, ProductFilter, MapFilter
 
 from dateutil.relativedelta import *
@@ -148,7 +149,32 @@ class ProductGroupViewSetForSelect2(viewsets.ModelViewSet):
 class MapViewSet(viewsets.ModelViewSet):
     queryset = Map.objects.all()
     serializer_class = MapSerializer
+    filterset_fields = {'map_number': ['icontains'], 'map_name': ['icontains']}
     permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=True, methods=['post'])
+    def make_map_clone(self, request, pk=None):
+        try:
+            parent = self.get_object()
+            new_map = Map(map_number=request.data['map_number'], map_name=request.data['map_name'])
+            new_map.save()
+
+            for p_in_m in parent.productsinmap_set.all():
+                new_p_in_map = ProductsInMap.objects.create(map=new_map, product=p_in_m.product, group=p_in_m.group,
+                                                            product_count_gross=p_in_m.product_count_gross,
+                                                            product_count_gross_normalize=p_in_m.product_count_gross_normalize,
+                                                            dish_category=p_in_m.dish_category)
+                new_p_in_map.treatments.add(*p_in_m.treatments.all())
+                new_p_in_map.save()
+            return Response('Ok', status.HTTP_200_OK)
+        except Exception:
+            return Response('Bad request', status.HTTP_400_BAD_REQUEST)
+
+
+class MapViewSetForSelect2(viewsets.ModelViewSet):
+    queryset = Map.objects.all()
+    serializer_class = MapSerializerForSelect2
+    filterset_fields = {'map_name': ['icontains']}
 
 
 class ProductsInMapViewSet(viewsets.ModelViewSet):
