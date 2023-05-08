@@ -19,9 +19,10 @@ from rest_framework.decorators import action
 
 from .models import MenuDay, Product, ProductGroup, MealTime, Map, MapsInMenuDay, ProductsInMap, DishCategory, \
     TreatmentKind, WastageByDateRange, DateRange
-from .serializers import ProductSerializer, ProductGroupSerializer, MapSerializer, ProductsInMapSerializer, \
+from .serializers import ProductSerializer, ProductGroupSerializer, MapSerializer, ProductsInMapListSerializer, \
     MapsInMenuDaySerializer, MealTimeSerializer, MenuDaySerializer, WastageByDateRangeSerializer, UserSerializer, \
-    TreatmentKindSerializer, DateRangeSerializer, ProductGroupSerializerForSelect2, MapSerializerForSelect2
+    TreatmentKindSerializer, DateRangeSerializer, ProductGroupSerializerForSelect2, MapSerializerForSelect2, DishCategorySerializer, MapListSerializer, \
+    ProductsInMapSerializer, ProductSerializerForSelect2
 from .filters import MenuDayFilter, ProductGroupFilter, ProductFilter, MapFilter
 
 from dateutil.relativedelta import *
@@ -118,7 +119,7 @@ def maps_items(request, map_id):
         'dish_categories': DishCategory.objects.all(),
         'product_group_list': ProductGroup.objects.all(),
         'treatments': TreatmentKind.objects.all().order_by('id'),
-        'net_weights': map_with_items.get_net_weights_by_dish_category(menu_date),
+        'net_weights': map_with_items.get_net_weights_by_dish_category_(menu_date),
         'values': map_with_items.get_values(menu_date),
         'menu_date': menu_date,
     })
@@ -131,6 +132,12 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     filterset_fields = {'product_name': ['icontains']}
     permission_classes = [permissions.IsAuthenticated]
+
+
+class ProductViewSetForSelect2(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializerForSelect2
+    filterset_fields = {'product_name': ['icontains']}
 
 
 class ProductGroupViewSet(viewsets.ModelViewSet):
@@ -151,6 +158,10 @@ class MapViewSet(viewsets.ModelViewSet):
     serializer_class = MapSerializer
     filterset_fields = {'map_number': ['icontains'], 'map_name': ['icontains']}
     permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        self.serializer_class = MapListSerializer
+        return super(MapViewSet, self).list(request, *args, **kwargs)
 
     @action(detail=True, methods=['post'])
     def make_map_clone(self, request, pk=None):
@@ -180,7 +191,12 @@ class MapViewSetForSelect2(viewsets.ModelViewSet):
 class ProductsInMapViewSet(viewsets.ModelViewSet):
     queryset = ProductsInMap.objects.all()
     serializer_class = ProductsInMapSerializer
+    filterset_fields = {'map': ['exact']}
     permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        self.serializer_class = ProductsInMapListSerializer
+        return super(ProductsInMapViewSet, self).list(request, *args, **kwargs)
 
 
 class MapsInMenuDayViewSet(viewsets.ModelViewSet):
@@ -216,6 +232,12 @@ class TreatmentKindViewSet(viewsets.ModelViewSet):
 class DateRangeViewSet(viewsets.ModelViewSet):
     queryset = DateRange.objects.all()
     serializer_class = DateRangeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class DishCategoryViewSet(viewsets.ModelViewSet):
+    queryset = DishCategory.objects.all()
+    serializer_class = DishCategorySerializer
     permission_classes = [permissions.IsAuthenticated]
 
 

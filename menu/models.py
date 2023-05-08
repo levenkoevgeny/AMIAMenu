@@ -102,6 +102,10 @@ class Product(models.Model):
                                                          treatment_kind=treatment_kind,
                                                          defaults={'percent': 0}, )
 
+    @property
+    def text(self):
+        return self.product_name
+
     def __str__(self):
         return self.product_name
 
@@ -155,8 +159,7 @@ class Map(models.Model):
     def text(self):
         return self.map_name
 
-    # получение масс нетто по категориям блюд (гарнир, основное блюдо и т.д.)
-    def get_net_weights_by_dish_category(self, menu_date=datetime.now().date()):
+    def get_net_weights_by_dish_category_(self, menu_date=datetime.now().date()):
         today_month = menu_date.month
         net_weight_dict = {}
 
@@ -187,8 +190,9 @@ class Map(models.Model):
             full_net_weight += net_weight_dict[k]
         net_weight_dict['full_net_weight'] = full_net_weight
         return net_weight_dict
+    # получение масс нетто по категориям блюд (гарнир, основное блюдо и т.д.)
 
-    def get_values(self, menu_date=datetime.now().date()):
+    def get_values_(self, menu_date=datetime.now().date()):
         today_month = menu_date.month
         energy_sum = 0
         protein_sum = 0
@@ -222,7 +226,7 @@ class Map(models.Model):
             energy_sum += energy_value_product
             net_weight_after_first_treatment_sum += product_in_map_net_weight
 
-        full_net_weight = self.get_net_weights_by_dish_category(menu_date)['full_net_weight']
+        full_net_weight = self.get_net_weights_by_dish_category_(menu_date)['full_net_weight']
         try:
             values_dict['energy'] = round(energy_sum * (100 - wastage_values.energy_value_wastage) / full_net_weight, 2)
             values_dict['energy_full'] = round(energy_sum, 2)
@@ -250,6 +254,14 @@ class Map(models.Model):
             values_dict['carbohydrates'] = 0
             values_dict['carbohydrates_full'] = 0
         return values_dict
+
+    @property
+    def get_net_weights_by_dish_category(self, menu_date=datetime.now().date()):
+        return self.get_net_weights_by_dish_category_(menu_date)
+
+    @property
+    def get_values(self, menu_date=datetime.now().date()):
+        return self.get_values_(menu_date)
 
     # Подсчет суммы масс брутто в карте по группе продуктов (норме)
     def get_product_group_value(self, product_group):
@@ -328,6 +340,14 @@ class ProductsInMap(models.Model):
             product_in_map_net_weight = 0 if product_in_map_net_weight < 0 else product_in_map_net_weight
             result_dict[treatment.id] = round(product_in_map_net_weight, 2)
         return result_dict
+
+    @property
+    def get_product_name(self):
+        return self.product.product_name
+
+    @property
+    def get_group_name(self):
+        return self.group.group_name
 
     @property
     def get_net_weight_property(self):

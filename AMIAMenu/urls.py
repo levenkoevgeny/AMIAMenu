@@ -15,6 +15,7 @@ from menu import views
 
 router = routers.DefaultRouter()
 router.register(r'products', views.ProductViewSet)
+router.register(r'products-select2', views.ProductViewSetForSelect2)
 router.register(r'product-groups', views.ProductGroupViewSet)
 router.register(r'product-groups-select2', views.ProductGroupViewSetForSelect2)
 router.register(r'maps', views.MapViewSet)
@@ -26,6 +27,7 @@ router.register(r'menu-days', views.MenuDayViewSet)
 router.register(r'wastage-by-date-range', views.WastageByDateRangeViewSet)
 router.register(r'treatment-kinds', views.TreatmentKindViewSet)
 router.register(r'date-ranges', views.DateRangeViewSet)
+router.register(r'dish-categories', views.DishCategoryViewSet)
 
 
 urlpatterns = [

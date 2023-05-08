@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Product, ProductGroup, Map, ProductsInMap, MapsInMenuDay,  MealTime, MenuDay, WastageByDateRange, \
-    TreatmentKind, DateRange
+    TreatmentKind, DateRange, DishCategory
 from django.contrib.auth.models import User
 
 
@@ -25,6 +25,12 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'product_name', 'energy_value', 'proteins', 'fats', 'carbohydrates', 'wastage_list']
+
+
+class ProductSerializerForSelect2(serializers.ModelSerializer):
+    class Meta:
+        model = ProductGroup
+        fields = ['id', 'text']
 
 
 class ProductGroupManySerializer(serializers.ModelSerializer):
@@ -57,7 +63,13 @@ class DateRangeSerializer(serializers.ModelSerializer):
 class MapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Map
-        fields = '__all__'
+        fields = ['id', 'map_number', 'map_name', 'description', 'get_net_weights_by_dish_category', 'get_values']
+
+
+class MapListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Map
+        fields = ['id', 'map_number', 'map_name', 'description']
 
 
 class MapSerializerForSelect2(serializers.ModelSerializer):
@@ -66,10 +78,17 @@ class MapSerializerForSelect2(serializers.ModelSerializer):
         fields = ['id', 'text']
 
 
+class ProductsInMapListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductsInMap
+        fields = ['id', 'product', 'group', 'product_count_gross', 'product_count_gross_normalize', 'dish_category', 'treatments', 'get_net_weight_treatment_array']
+        depth = 1
+
+
 class ProductsInMapSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductsInMap
-        fields = '__all__'
+        fields = ['id', 'map', 'product', 'group', 'product_count_gross', 'dish_category', 'treatments', 'get_product_name', 'get_group_name']
 
 
 class MapsInMenuDaySerializer(serializers.ModelSerializer):
@@ -102,6 +121,9 @@ class TreatmentKindSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
+class DishCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DishCategory
+        fields = '__all__'
 
 
