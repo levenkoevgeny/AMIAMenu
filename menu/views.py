@@ -120,7 +120,7 @@ def maps_items(request, map_id):
         'product_group_list': ProductGroup.objects.all(),
         'treatments': TreatmentKind.objects.all().order_by('id'),
         'net_weights': map_with_items.get_net_weights_by_dish_category_(menu_date),
-        'values': map_with_items.get_values(menu_date),
+        'values': map_with_items.get_values_(menu_date),
         'menu_date': menu_date,
     })
 
@@ -158,6 +158,16 @@ class MapViewSet(viewsets.ModelViewSet):
     serializer_class = MapSerializer
     filterset_fields = {'map_number': ['icontains'], 'map_name': ['icontains']}
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if 'menu_date' in self.request.query_params:
+            try:
+                datetime.strptime(self.request.query_params['menu_date'], '%Y-%m-%d')
+                context['menu_date'] = self.request.query_params['menu_date']
+            except ValueError:
+                return context
+        return context
 
     def list(self, request, *args, **kwargs):
         self.serializer_class = MapListSerializer
@@ -214,6 +224,7 @@ class MealTimeViewSet(viewsets.ModelViewSet):
 class MenuDayViewSet(viewsets.ModelViewSet):
     queryset = MenuDay.objects.all()
     serializer_class = MenuDaySerializer
+    filterset_fields = {'menu_day_date': ['gte', 'lte']}
     permission_classes = [permissions.IsAuthenticated]
 
 

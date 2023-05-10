@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Product, ProductGroup, Map, ProductsInMap, MapsInMenuDay,  MealTime, MenuDay, WastageByDateRange, \
     TreatmentKind, DateRange, DishCategory
 from django.contrib.auth.models import User
+from datetime import datetime
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -61,12 +62,28 @@ class DateRangeSerializer(serializers.ModelSerializer):
 
 
 class MapSerializer(serializers.ModelSerializer):
+    get_net_weights_by_dish_category = serializers.SerializerMethodField()
+    get_values = serializers.SerializerMethodField()
+
     class Meta:
         model = Map
         fields = ['id', 'map_number', 'map_name', 'description', 'get_net_weights_by_dish_category', 'get_values']
 
+    def get_get_net_weights_by_dish_category(self, obj):
+        if 'menu_date' in self.context:
+            date_time_obj = datetime.strptime(self.context['menu_date'], '%Y-%m-%d')
+            return obj.get_net_weights_by_dish_category_(date_time_obj.date())
+        return obj.get_net_weights_by_dish_category_()
+
+    def get_get_values(self, obj):
+        if 'menu_date' in self.context:
+            date_time_obj = datetime.strptime(self.context['menu_date'], '%Y-%m-%d')
+            return obj.get_values_(date_time_obj.date())
+        return obj.get_values_()
+
 
 class MapListSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Map
         fields = ['id', 'map_number', 'map_name', 'description']

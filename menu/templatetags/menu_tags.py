@@ -71,7 +71,7 @@ def get_product_count_interval(menu_days, product):
 
 @register.filter(name='get_net_weights')
 def get_net_weights(map, date):
-    return map.get_net_weights_by_dish_category(date)
+    return map.get_net_weights_by_dish_category_(date)
 
 
 @register.filter(name='get_net_weights_day')
@@ -80,7 +80,7 @@ def get_net_weights_day(menu_day, date):
     for dish_category in DishCategory.objects.all():
         net_weight = 0
         for map in menu_day.technological_maps.all():
-            net_weight += map.get_net_weights_by_dish_category(menu_day.menu_day_date)[dish_category.id]
+            net_weight += map.get_net_weights_by_dish_category_(menu_day.menu_day_date)[dish_category.id]
         net_weight_dict[dish_category.id] = net_weight
     full_net_weight = 0
     for k in net_weight_dict:
@@ -96,7 +96,7 @@ def get_net_weights_interval(menu_days, date):
         net_weight = 0
         for menu_day in menu_days:
             for map in menu_day.technological_maps.all():
-                net_weight += map.get_net_weights_by_dish_category(menu_day.menu_day_date)[dish_category.id]
+                net_weight += map.get_net_weights_by_dish_category_(menu_day.menu_day_date)[dish_category.id]
         net_weight_dict[dish_category.id] = net_weight
     full_net_weight = 0
     for k in net_weight_dict:
@@ -110,14 +110,14 @@ def get_net_weights_interval(menu_days, date):
 
 @register.filter(name='get_values')
 def get_values(map, date):
-    return map.get_values(date)
+    return map.get_values_(date)
 
 
 @register.filter(name='get_energy_day')
 def get_energy_day(menu_day, date):
     energy_sum = 0
     for map in menu_day.technological_maps.all():
-        energy_sum += map.get_values(menu_day.menu_day_date)['energy_full']
+        energy_sum += map.get_values_(menu_day.menu_day_date)['energy_full']
     return round(energy_sum, 2) if energy_sum > 0 else ''
 
 
@@ -126,5 +126,5 @@ def get_energy_interval(menu_days, date):
     energy_sum = 0
     for menu_day in menu_days:
         for map in menu_day.technological_maps.all():
-            energy_sum += map.get_values(menu_day.menu_day_date)['energy_full']
+            energy_sum += map.get_values_(menu_day.menu_day_date)['energy_full']
     return round(energy_sum, 2) if energy_sum > 0 else ''

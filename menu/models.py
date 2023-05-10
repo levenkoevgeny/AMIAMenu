@@ -256,11 +256,11 @@ class Map(models.Model):
         return values_dict
 
     @property
-    def get_net_weights_by_dish_category(self, menu_date=datetime.now().date()):
+    def get_net_weights_by_dish_category__(self, menu_date=datetime.now().date()):
         return self.get_net_weights_by_dish_category_(menu_date)
 
     @property
-    def get_values(self, menu_date=datetime.now().date()):
+    def get_values__(self, menu_date=datetime.now().date()):
         return self.get_values_(menu_date)
 
     # Подсчет суммы масс брутто в карте по группе продуктов (норме)
