@@ -32,6 +32,7 @@ router.register(r'dish-categories', views.DishCategoryViewSet)
 
 urlpatterns = [
     path('api/users/me/', views.get_me),
+    path('api/menus/', views.get_menus),
     path('api/', include(router.urls)),
     # path('', RedirectView.as_view(url='/menu'), name="redirect-to-menu"),
     path('admin/', admin.site.urls),

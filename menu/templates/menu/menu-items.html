@@ -154,7 +154,6 @@
                         {% endfor %}
                         <tr>
                             <td><b>Итого за день</b></td>
-
                             {% for product_g in products_group_main %}
                                 <td class="table-success text-center align-middle">{{ menu_day|get_map_gross_by_product_group_day:product_g.id }}</td>
                                 {% with maps_id_list|get_all_products_in_group_dates_interval:product_g.id as products_in_group %}

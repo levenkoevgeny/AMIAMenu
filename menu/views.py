@@ -286,6 +286,76 @@ def make_map_clone(request):
 
 
 @api_view(['GET'])
+def get_menus(request):
+
+    if 'menu_day_date_start' in request.query_params and 'menu_day_date_end' in request.query_params:
+        f = MenuDayFilter(request.query_params, queryset=MenuDay.objects.all())
+        menu_days = f.qs
+    else:
+        f = MenuDayFilter(request.query_params, queryset=MenuDay.objects.filter(menu_day_date=datetime.now().date()))
+        menu_days = f.qs
+    maps_in_menu_days_all = MapsInMenuDay.objects.all()
+    maps_in_menu_days = maps_in_menu_days_all.filter(menu_day__in=menu_days).distinct()
+
+
+
+    if 'menu_day_date_start' in request.query_params and 'menu_day_date_end' in request.query_params:
+
+        date_start_str = request.GET['menu_day_date_start'] if request.GET['menu_day_date_start'] != '' else str(
+            datetime.now().date())
+        date_end_str = request.GET['menu_day_date_end'] if request.GET['menu_day_date_end'] != '' else str(
+            datetime.now().date())
+
+        date_start = datetime.strptime(date_start_str, '%Y-%m-%d').date()
+        date_end = datetime.strptime(date_end_str, '%Y-%m-%d').date()
+    else:
+        date_start = datetime.now().date()
+        date_end = datetime.now().date()
+
+    products_group = ProductGroup.objects.all()
+    products_group_main = products_group.filter(replacement_for=F('pk'))
+
+    results_maps = {}
+    for day in menu_days:
+        meals = {}
+        for meal in MealTime.objects.all():
+            maps_array = []
+            maps_ids = [map.map.id for map in maps_in_menu_days]
+
+            for m in maps_in_menu_days_all.filter(menu_day=day, meal_time=meal):
+                get_product_group_value_obj = {}
+                get_product_count_obj = {}
+                for group in products_group_main:
+                    products_in_maps = Product.objects.filter(productsinmap__map__in=maps_ids,
+                                                              productsinmap__group__replacement_for=group).distinct()
+                    get_product_group_value_obj[str(group.id)] = m.map.get_product_group_value(group)
+
+                    for product in products_in_maps:
+                        get_product_count_obj[str(product.id)] = m.map.get_product_count(product)
+
+                maps_array.append({'map_id': m.map.id, 'map_name': m.map.map_name, 'get_product_group_value_obj': get_product_group_value_obj,
+                                   'get_product_count_obj': get_product_count_obj, 'get_net_weights': m.map.get_net_weights_by_dish_category_(day.menu_day_date),
+                                   'get_values': m.map.get_values_(day.menu_day_date)})
+                meals[str(meal.id)] = maps_array
+        results_maps[str(day.menu_day_date)] = meals
+
+    maps = [map.map.id for map in maps_in_menu_days]
+
+    results_groups_products = []
+    for group in products_group_main:
+        products_in_maps = Product.objects.filter(productsinmap__map__in=maps, productsinmap__group__replacement_for=group).distinct()
+        products = []
+        for product in products_in_maps:
+            products.append({'product_name': product.product_name, 'product_id': product.id})
+        results_groups_products.append({'group_name': group.group_name, 'group_id': group.id, 'norm_per_day': group.norm_per_day, 'products': products})
+    return Response({'groups_products': results_groups_products, 'maps': results_maps, 'day_count': relativedelta(date_end, date_start).days + 1,}, status.HTTP_200_OK)
+
+
+
+
+
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_me(request):
     try:
@@ -301,3 +371,5 @@ def get_me(request):
         return Response(status=status.HTTP_404_NOT_FOUND)
     except Exception:
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+

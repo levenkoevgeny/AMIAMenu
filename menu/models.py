@@ -266,13 +266,13 @@ class Map(models.Model):
     # Подсчет суммы масс брутто в карте по группе продуктов (норме)
     def get_product_group_value(self, product_group):
         value = self.productsinmap_set.all().filter(group__replacement_for=product_group).aggregate(Sum('product_count_gross_normalize'))['product_count_gross_normalize__sum']
-        return value if value else 0
+        return round(value, 2) if value else 0
 
     # Подсчет количества указанного продукта в карте
     def get_product_count(self, product):
         count = self.productsinmap_set.filter(product=product).aggregate(Sum('product_count_gross'))[
             'product_count_gross__sum']
-        return count if count else 0
+        return round(count, 2) if count else 0
 
     class Meta:
         ordering = ('map_name',)
